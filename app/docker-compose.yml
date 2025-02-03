@@ -1,0 +1,64 @@
+version: "3.9"
+services:
+  pagination_app_db:
+    image: postgres:${POSTGRES_VERSION}
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PSW}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+    command: -p ${POSTGRES_PORT}
+    container_name: "pagination_app_db"
+    expose:
+      - "${POSTGRES_PORT}"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -p ${POSTGRES_PORT}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - pagination_app_db-data:/var/lib/postgresql/data
+    networks:
+      - pagination-app
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      pagination_app_db:
+        condition: service_healthy
+    networks:
+      - pagination-app
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      pagination_app_db:
+        condition: service_healthy
+    container_name: "app"
+    command: ["executable", "arg"]
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - pagination-app
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    volumes:
+      - .:/app
+volumes:
+  pagination_app_db-data:
+
+networks:
+  pagination-app:
+    driver: bridge
