@@ -16,3 +16,9 @@ type SeedHandler struct {
 	Generator dataGenInterface
 	Repo      repoInterface
 }
+
+func (s SeedHandler) Seed(itemsNum int) error {
+	usersData := s.Generator.Generate(int64(itemsNum))
+	err := s.Repo.Create(usersData)
+	return err
+}
