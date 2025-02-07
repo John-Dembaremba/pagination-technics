@@ -54,3 +54,7 @@ func (r RepositoryHandler) Create(users []model.UserGenData) error {
 
 	return nil
 }
+
+func (r RepositoryHandler) LimitOffsetRead(offset, limit int) {
+
+}
