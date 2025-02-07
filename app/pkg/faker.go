@@ -7,7 +7,18 @@ import (
 
 func NewUserGenData() model.UserGenData {
 	return model.UserGenData{
-		FirstName: fake.FirstName(),
-		Surname:   fake.LastName(),
+		Name:    fake.FirstName(),
+		Surname: fake.LastName(),
 	}
+}
+
+func FakeUsersData(n int) model.UsersData {
+	var usersData model.UsersData
+	for i := 1; i <= n; i++ {
+		usersData = append(usersData, model.UserData{
+			ID:          i,
+			UserGenData: NewUserGenData(),
+		})
+	}
+	return usersData
 }
