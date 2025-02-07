@@ -3,6 +3,7 @@ module github.com/John-Dembaremba/pagination-technics
 go 1.23.3
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/docker/go-connections v0.5.0
 	github.com/icrowley/fake v0.0.0-20240710202011-f797eb4a99c0
 	github.com/lib/pq v1.10.9
