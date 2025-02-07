@@ -75,3 +75,11 @@ func (r RepositoryHandler) LimitOffsetRead(offset, limit int) (model.UsersData, 
 
 	return usersData, nil
 }
+
+func (r RepositoryHandler) TotalUsers() (int, error) {
+	var count int
+	if err := r.Db.QueryRow("SELECT COUNT(id) FROM users").Scan(&count); err != nil {
+		return count, fmt.Errorf("TotalUsers query exec failed with error: %v", err)
+	}
+	return count, nil
+}
