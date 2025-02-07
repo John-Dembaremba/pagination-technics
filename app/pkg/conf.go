@@ -12,7 +12,7 @@ import (
 type Env struct {
 	ProjectVersion   string `mapstructure:"PROJECT_VERSION"`
 	ServerPort       string `mapstructure:"SERVER_PORT"`
-	POSTGRES_VERSION string `mapstructure:"PROJECT_VERSION"`
+	POSTGRES_VERSION string `mapstructure:"POSTGRES_VERSION"`
 }
 
 func NewEnv() Env {

@@ -1,30 +1,26 @@
 package test
 
 import (
-	"errors"
+	"context"
+	"database/sql"
+	"log"
 	"testing"
 
 	"github.com/John-Dembaremba/pagination-technics/internal/domain"
-	"github.com/John-Dembaremba/pagination-technics/internal/model"
+	"github.com/John-Dembaremba/pagination-technics/internal/repo"
+	"github.com/John-Dembaremba/pagination-technics/pkg"
 )
 
-type dataGenInterfaceMock struct{}
-
-func (dataGenInterfaceMock) Generate(num int64) []model.UserGenData {
-	var d []model.UserGenData
-	for range num {
-		d = append(d, model.UserGenData{})
+func assertCreatedUser(t testing.TB, db *sql.DB, itemsNum int) {
+	t.Helper()
+	var count int
+	err := db.QueryRow("SELECT COUNT(id) FROM users").Scan(&count)
+	if err != nil {
+		log.Fatal(err)
 	}
-	return d
-}
-
-type repoInterfaceMock struct{}
-
-func (repoInterfaceMock) Create(users []model.UserGenData) error {
-	if len(users) == 10 {
-		return errors.New("some database error")
+	if count != itemsNum {
+		t.Errorf("expected number of users: %v, got %v", itemsNum, count)
 	}
-	return nil
 }
 
 func TestSeedHandler(t *testing.T) {
@@ -34,20 +30,29 @@ func TestSeedHandler(t *testing.T) {
 		expectedErr any
 	}{
 		{
-			name:        "happy path",
+			name:        "test-1000",
 			itemsNum:    1000,
 			expectedErr: nil,
 		},
-		{
-			name:        "unhappy path",
-			itemsNum:    10, // trigger failure
-			expectedErr: "some database error",
-		},
 	}
 
+	dbAttributes := pkg.DbAttributes{
+		DbName:     "pagination-app",
+		DbUserName: "user",
+		DbPassword: "mypassword",
+		MappedPort: "5432",
+	}
+
+	ctx := context.Background()
+	testContainer := dbAttributes.PgTestContainerSetup(ctx)
+	schemaFile := "../../../../pkg/schema.sql"
+	db := dbAttributes.DbSetup(ctx, testContainer, schemaFile)
+	defer pkg.TearDown(db, testContainer)
+
+	repoInterface := repo.RepositoryHandler{Db: db}
 	handler := domain.SeedHandler{
-		Generator: dataGenInterfaceMock{},
-		Repo:      repoInterfaceMock{},
+		Generator: domain.DataGenHandler{},
+		Repo:      repoInterface,
 	}
 
 	for _, tc := range testCases {
@@ -70,6 +75,7 @@ func TestSeedHandler(t *testing.T) {
 
 				}
 			}
+			assertCreatedUser(t, db, tc.itemsNum)
 		})
 	}
 }

@@ -1,4 +1,4 @@
-package domain
+package repo
 
 import (
 	"database/sql"
@@ -29,7 +29,7 @@ func (r RepositoryHandler) Create(users []model.UserGenData) error {
 	}()
 
 	// Prepare COPY statement
-	stmt, err := tx.Prepare(pq.CopyIn("users", "first_name", "surname"))
+	stmt, err := tx.Prepare(pq.CopyIn("users", "name", "surname"))
 	if err != nil {
 		return fmt.Errorf("failed to prepare COPY statement: %v", err)
 	}

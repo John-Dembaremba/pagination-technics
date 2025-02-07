@@ -7,6 +7,8 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/docker/go-connections/nat"
 	_ "github.com/lib/pq"
@@ -22,7 +24,13 @@ type DbAttributes struct {
 
 // readSqlFile reads the SQL schema file and returns its contents as a string.
 func readSqlFile(path string) (string, error) {
-	file, err := os.Open(path)
+	// Get the absolute path of the schema file
+	absPath, err := filepath.Abs(filepath.Join("pkg", path))
+	if err != nil {
+		return "", err
+	}
+
+	file, err := os.Open(absPath)
 	if err != nil {
 		return "", err
 	}
@@ -30,7 +38,7 @@ func readSqlFile(path string) (string, error) {
 
 	content, err := io.ReadAll(file)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	return string(content), nil
@@ -52,6 +60,7 @@ func (d *DbAttributes) PgTestContainerSetup(ctx context.Context) *postgres.Postg
 		postgres.WithDatabase(d.DbName),
 		postgres.WithUsername(d.DbUserName),
 		postgres.WithPassword(d.DbPassword),
+		// postgres.WithWaitStrategy(wait),
 	)
 
 	if err != nil {
@@ -62,7 +71,7 @@ func (d *DbAttributes) PgTestContainerSetup(ctx context.Context) *postgres.Postg
 }
 
 // DbSetup establishes a database connection and applies schema migrations.
-func (d *DbAttributes) DbSetup(ctx context.Context, ctr *postgres.PostgresContainer) *sql.DB {
+func (d *DbAttributes) DbSetup(ctx context.Context, ctr *postgres.PostgresContainer, schemaFileDir string) *sql.DB {
 	host, err := ctr.Host(ctx)
 	if err != nil {
 		log.Fatalf("Failed to get container host: %v", err)
@@ -86,13 +95,14 @@ func (d *DbAttributes) DbSetup(ctx context.Context, ctr *postgres.PostgresContai
 		log.Fatalf("Failed to connect db: %v", err)
 	}
 
+	time.Sleep(5 * time.Second)
 	if err := db.Ping(); err != nil {
 		log.Fatalf("Failed to ping the database: %v", err)
 	}
 
 	log.Println("Db setup completed.")
 
-	query, err := readSqlFile("./schema.sql")
+	query, err := readSqlFile(schemaFileDir)
 	if err != nil {
 		log.Fatalf("Failed to read sql file: %v", err)
 	}
