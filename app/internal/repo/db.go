@@ -37,7 +37,7 @@ func (r RepositoryHandler) Create(users []model.UserGenData) error {
 
 	// Bulk insert users
 	for _, user := range users {
-		if _, err = stmt.Exec(user.FirstName, user.Surname); err != nil {
+		if _, err = stmt.Exec(user.Name, user.Surname); err != nil {
 			return fmt.Errorf("failed to insert data: %v", err)
 		}
 	}
@@ -55,6 +55,23 @@ func (r RepositoryHandler) Create(users []model.UserGenData) error {
 	return nil
 }
 
-func (r RepositoryHandler) LimitOffsetRead(offset, limit int) {
+func (r RepositoryHandler) LimitOffsetRead(offset, limit int) (model.UsersData, error) {
+	query := `SELECT id, name, surname FROM users ORDER BY id LIMIT $1 OFFSET $2;`
 
+	var usersData model.UsersData
+	rows, err := r.Db.Query(query, limit, offset)
+	if err != nil {
+		return usersData, fmt.Errorf("LimitOffsetRead query exec failed with error: %v", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var userData model.UserData
+		if err := rows.Scan(&userData.ID, &userData.Name, &userData.Surname); err != nil {
+			return usersData, fmt.Errorf("LimitOffsetRead query scan failed with error: %v", err)
+		}
+		usersData = append(usersData, userData)
+	}
+
+	return usersData, nil
 }

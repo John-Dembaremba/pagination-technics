@@ -1,8 +1,8 @@
 package model
 
 type UserGenData struct {
-	FirstName string
-	Surname   string
+	Name    string
+	Surname string
 }
 
 type Pagination struct {
