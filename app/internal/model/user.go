@@ -5,13 +5,6 @@ type UserGenData struct {
 	Surname string
 }
 
-type Pagination struct {
-	CurrentPage int
-	NextPage    int
-	PrevPage    int
-	TotalPages  int
-}
-
 type UserData struct {
 	ID int
 	UserGenData
