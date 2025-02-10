@@ -83,3 +83,25 @@ func (r RepositoryHandler) TotalUsers() (int, error) {
 	}
 	return count, nil
 }
+
+func (r RepositoryHandler) CursorBasedRead(cursor, limit int) (model.UsersData, error) {
+	query := "SELECT id, name, surname FROM users ORDER BY id WHERE id < $1 LIMIT $2;"
+
+	var usersData model.UsersData
+	rows, err := r.Db.Query(query, cursor, limit)
+	if err != nil {
+		return usersData, fmt.Errorf("CursorBasedRead query exec failed with error: %v", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var userData model.UserData
+		if err := rows.Scan(&userData.ID, &userData.UserGenData.Name, &userData.UserGenData.Surname); err != nil {
+			return usersData, fmt.Errorf("CursorBasedRead query exec failed with error: %v", err)
+		}
+
+		usersData = append(usersData, userData)
+
+	}
+	return usersData, nil
+}
