@@ -85,7 +85,7 @@ func (r RepositoryHandler) TotalUsers() (int, error) {
 }
 
 func (r RepositoryHandler) CursorBasedRead(cursor, limit int) (model.UsersData, error) {
-	query := "SELECT id, name, surname FROM users ORDER BY id WHERE id < $1 LIMIT $2;"
+	query := "SELECT id, name, surname FROM users WHERE id < $1 ORDER BY id DESC LIMIT $2;"
 
 	var usersData model.UsersData
 	rows, err := r.Db.Query(query, cursor, limit)

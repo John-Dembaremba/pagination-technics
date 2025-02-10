@@ -27,7 +27,7 @@ func TestCursorBasedRead(t *testing.T) {
 		)
 	}
 
-	query := "SELECT id, name, surname FROM users ORDER BY id WHERE id < $1 LIMIT $2;"
+	query := "SELECT id, name, surname FROM users WHERE id < $1 ORDER BY id DESC LIMIT $2;"
 
 	t.Run("success query", func(t *testing.T) {
 		mock.ExpectQuery(query).WithArgs(cursor, limit).WillReturnRows(rows)

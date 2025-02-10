@@ -11,3 +11,8 @@ type UsersPaginationMetaData struct {
 	Users      UsersData
 	Pagination Pagination
 }
+
+type UsersCursorBasedMetaData struct {
+	Users      UsersData
+	NextCursor int
+}
