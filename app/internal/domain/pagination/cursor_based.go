@@ -16,6 +16,7 @@ type CursorBasedHandler struct {
 	Repo cursoBasedRepoInterface
 }
 
+// NewCursorBasedHandler initializes a CursorBasedHandler with a database connection.
 func NewCursorBasedHandler(db *sql.DB) CursorBasedHandler {
 	repoHandler := repo.RepositoryHandler{Db: db}
 	return CursorBasedHandler{
@@ -23,6 +24,9 @@ func NewCursorBasedHandler(db *sql.DB) CursorBasedHandler {
 	}
 }
 
+// Retrieve fetches a paginated list of users using cursor-based pagination.
+// It returns a UsersCursorBasedMetaData struct containing the retrieved users
+// and the next cursor for subsequent queries.
 func (h CursorBasedHandler) Retrieve(cursor, limit int) (model.UsersCursorBasedMetaData, error) {
 	var pgMetaData model.UsersCursorBasedMetaData
 
