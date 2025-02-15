@@ -5,6 +5,10 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/John-Dembaremba/pagination-technics/internal/api"
+	"github.com/John-Dembaremba/pagination-technics/internal/domain"
+	"github.com/John-Dembaremba/pagination-technics/internal/domain/pagination"
+	"github.com/John-Dembaremba/pagination-technics/internal/repo"
 	"github.com/John-Dembaremba/pagination-technics/pkg"
 )
 
@@ -12,12 +16,36 @@ func main() {
 	log.Println("Setting Env Variables ...")
 	env := pkg.NewEnv()
 
+	db, err := pkg.NewPgDb(env.POSTGRES_DB, env.POSTGRES_USER, env.POSTGRES_PSW, env.POSTGRES_PORT)
+	if err != nil {
+		log.Fatalf("failed to init database with error: %v", err)
+	}
+	repo := repo.RepositoryHandler{Db: db}
+
+	numUsers := 1000
+	log.Printf("Seeding %v of users", numUsers)
+
+	seedH := domain.SeedHandler{
+		Generator: domain.DataGenHandler{},
+		Repo:      repo,
+	}
+	if err = seedH.Seed(numUsers); err != nil {
+		log.Fatalf("Seeding failed with error: %v", err)
+	}
+	log.Println("Seeding completed.")
+
 	log.Printf("Starting Server on port: %v\n", env.ServerPort)
+	defer log.Println("--------------------------")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello Paginators are ready")
 	})
 
-	http.ListenAndServe(":3025", mux)
+	cursorBsdHandler := pagination.NewCursorBasedHandler(db)
+	cursorBsdHttpControler := api.NewCursorBasedHttpController(cursorBsdHandler)
+
+	mux.HandleFunc("/users/cursor-based", cursorBsdHttpControler.GetUsers)
+
+	http.ListenAndServe(fmt.Sprintf(":%v\n", env.ServerPort), mux)
 }

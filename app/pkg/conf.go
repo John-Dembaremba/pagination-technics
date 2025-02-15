@@ -13,6 +13,11 @@ type Env struct {
 	ProjectVersion   string `mapstructure:"PROJECT_VERSION"`
 	ServerPort       string `mapstructure:"SERVER_PORT"`
 	POSTGRES_VERSION string `mapstructure:"POSTGRES_VERSION"`
+	POSTGRES_DB      string `mapstructure:"POSTGRES_DB"`
+	POSTGRES_USER    string `mapstructure:"POSTGRES_USER"`
+	POSTGRES_PSW     string `mapstructure:"POSTGRES_PSW"`
+	POSTGRES_PORT    string `mapstructure:"POSTGRES_PORT"`
+	POSTGRES_HOST    string `mapstructure:"POSTGRES_HOST"`
 }
 
 func NewEnv() Env {

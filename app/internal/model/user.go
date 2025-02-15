@@ -11,3 +11,9 @@ type UserData struct {
 }
 
 type UsersData []UserData
+
+type ResponseMeta struct {
+	Error   string
+	Success string
+	Data    interface{}
+}
