@@ -41,6 +41,43 @@ func TestGetUsers(t *testing.T) {
 		log.Fatalf("Seeding failed with error: %v", err)
 	}
 
+	assertDecodedJson := func(t testing.TB, resp *httptest.ResponseRecorder, payload *model.ResponseMeta) {
+		t.Helper()
+		decoder := json.NewDecoder(resp.Body)
+		if err := decoder.Decode(payload); err != nil {
+			t.Errorf("Error decoding JSON: %v", err)
+		}
+	}
+
+	assertStatusCode := func(t testing.TB, got, want int) {
+		t.Helper()
+		if want != got {
+			t.Errorf("expected code: %v, got %v", want, got)
+		}
+	}
+
+	assertUnSuccessfulReq := func(t testing.TB, expectedErro string, payload model.ResponseMeta) {
+		t.Helper()
+		if expectedErro != payload.Error {
+			t.Errorf("expected error message: %v, got %v", expectedErro, payload.Error)
+		}
+
+		if payload.Success != "" {
+			t.Errorf("expected no success message, got %v", payload.Success)
+		}
+	}
+
+	assertSuccessReq := func(t testing.TB, expectedSuccessMsg string, payload model.ResponseMeta) {
+		t.Helper()
+		if expectedSuccessMsg != payload.Success {
+			t.Errorf("expected success message: %v, got %v", expectedSuccessMsg, payload.Success)
+		}
+
+		if payload.Error != "" {
+			t.Errorf("expected no error message, got %v", payload.Error)
+		}
+	}
+
 	t.Run("cursor based", func(t *testing.T) {
 		testCases := []struct {
 			name         string
@@ -138,39 +175,95 @@ func TestGetUsers(t *testing.T) {
 
 				req.Header.Set("Content-Type", "application/json")
 				resp := httptest.NewRecorder()
-				var payload model.ResponseMeta
 
 				httpController.GetUsers(resp, req)
-				decoder := json.NewDecoder(resp.Body)
 
-				if tc.code != resp.Code {
-					t.Errorf("expected code: %v, got %v", tc.code, resp.Code)
-				}
-
-				if err := decoder.Decode(&payload); err != nil {
-					t.Errorf("Error decoding JSON: %v", err)
-				}
+				var payload model.ResponseMeta
+				assertStatusCode(t, resp.Code, tc.code)
+				assertDecodedJson(t, resp, &payload)
 
 				if !tc.isSuccess {
-					if tc.expectedResp.Error != payload.Error {
-						t.Errorf("expected error message: %v, got %v", tc.expectedResp.Error, payload.Error)
-					}
-
-					if payload.Success != "" {
-						t.Errorf("expected no success message, got %v", payload.Success)
-					}
+					assertUnSuccessfulReq(t, tc.expectedResp.Error, payload)
 				} else {
-					if tc.expectedResp.Success != payload.Success {
-						t.Errorf("expected success message: %v, got %v", tc.expectedResp.Success, payload.Success)
-					}
-
-					if payload.Error != "" {
-						t.Errorf("expected no error message, got %v", payload.Error)
-					}
+					assertSuccessReq(t, tc.expectedResp.Success, payload)
 
 					cursorInt, _ := strconv.Atoi(tc.cursor)
 					limitInt, _ := strconv.Atoi(tc.limit)
 					assertUserData(t, payload.Data, cursorInt, limitInt)
+				}
+
+			})
+		}
+
+	})
+
+	t.Run("limit offset", func(t *testing.T) {
+		testCases := []struct {
+			name         string
+			page         string
+			limit        string
+			code         int
+			expectedResp model.ResponseMeta
+			isSuccess    bool
+		}{
+			{
+				name:  "invalid page",
+				page:  "invalid-page",
+				limit: "10",
+				code:  400,
+				expectedResp: model.ResponseMeta{
+					Error: "invalid page",
+				},
+				isSuccess: false,
+			},
+			{
+				name:  "invalid limit",
+				page:  "5",
+				limit: "invalid-limit",
+				code:  400,
+				expectedResp: model.ResponseMeta{
+					Error: "invalid limit",
+				},
+				isSuccess: false,
+			},
+			{
+				name:  "success",
+				page:  "5",
+				limit: "10",
+				code:  200,
+				expectedResp: model.ResponseMeta{
+					Error:   "",
+					Success: "retrieved successfully",
+					Data:    model.UsersPaginationMetaData{},
+				},
+				isSuccess: true,
+			},
+		}
+
+		repoHandler := pagination.NewLimitOffSetHandler(db)
+		httpControler := LimitOffsetHttpControler{Handler: repoHandler}
+
+		for _, tc := range testCases {
+			t.Run(tc.name, func(t *testing.T) {
+				url := fmt.Sprintf("users/limit-offset?page=%v&limit=%v", tc.page, tc.limit)
+
+				req, err := http.NewRequest(http.MethodGet, url, nil)
+				if err != nil {
+					t.Fatalf("request creation failed with error: %v", err)
+				}
+				req.Header.Set("Content-Type", "application/json")
+
+				resp := httptest.NewRecorder()
+				httpControler.GetUsers(resp, req)
+
+				assertStatusCode(t, resp.Code, tc.code)
+				var payload model.ResponseMeta
+				assertDecodedJson(t, resp, &payload)
+
+				if !tc.isSuccess {
+					assertUnSuccessfulReq(t, tc.expectedResp.Error, payload)
+				} else {
+					assertSuccessReq(t, tc.expectedResp.Success, payload)
 				}
 
 			})
