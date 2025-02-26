@@ -16,13 +16,25 @@ func main() {
 	log.Println("Setting Env Variables ...")
 	env := pkg.NewEnv()
 
-	db, err := pkg.NewPgDb(env.POSTGRES_DB, env.POSTGRES_USER, env.POSTGRES_PSW, env.POSTGRES_PORT)
+	db, err := pkg.NewPgDb(env.POSTGRES_CONTAINER_NAME, env.POSTGRES_DB, env.POSTGRES_USER, env.POSTGRES_PSW, env.POSTGRES_PORT)
 	if err != nil {
 		log.Fatalf("failed to init database with error: %v", err)
 	}
+
+	migration_query, err := pkg.ReadFile("./schema.sql")
+	if err != nil {
+		log.Fatalf("failed to read sql schema with error: %v", err)
+	}
+
+	if err = pkg.RunMigration(db, migration_query); err != nil {
+		log.Fatalf("failed to run migration with error: %v", err)
+	}
+	log.Println("Migration completed successfully.")
+
 	repo := repo.RepositoryHandler{Db: db}
 
 	numUsers := 1000
+
 	log.Printf("Seeding %v of users", numUsers)
 
 	seedH := domain.SeedHandler{
@@ -44,8 +56,11 @@ func main() {
 
 	cursorBsdHandler := pagination.NewCursorBasedHandler(db)
 	cursorBsdHttpControler := api.NewCursorBasedHttpController(cursorBsdHandler)
+	mux.HandleFunc("GET /users/cursor-based", cursorBsdHttpControler.GetUsers)
 
-	mux.HandleFunc("/users/cursor-based", cursorBsdHttpControler.GetUsers)
+	limitOffsetHandler := pagination.NewLimitOffSetHandler(db)
+	limitOffsetHttpController := api.NewLimitOffsetHttpControler(limitOffsetHandler)
+	mux.HandleFunc("GET /users/limit-offset", limitOffsetHttpController.GetUsers)
 
-	http.ListenAndServe(fmt.Sprintf(":%v\n", env.ServerPort), mux)
+	http.ListenAndServe(fmt.Sprintf(":%v", env.ServerPort), mux)
 }

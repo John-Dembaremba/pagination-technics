@@ -11,6 +11,12 @@ type LimitOffsetHttpControler struct {
 	Handler pagination.LimitOffSetHandler
 }
 
+func NewLimitOffsetHttpControler(repo pagination.LimitOffSetHandler) LimitOffsetHttpControler {
+	return LimitOffsetHttpControler{
+		Handler: repo,
+	}
+}
+
 func (h LimitOffsetHttpControler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.Query()
 

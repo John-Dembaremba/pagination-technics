@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DB}
     command: -p ${POSTGRES_PORT}
-    container_name: "pagination_app_db"
+    container_name: ${POSTGRES_CONTAINER_NAME}
     expose:
       - "${POSTGRES_PORT}"
     healthcheck:
@@ -21,7 +21,7 @@ services:
         ]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 2
     volumes:
       - pagination_app_db-data:/var/lib/postgresql/data
     networks:
@@ -46,7 +46,6 @@ services:
       pagination_app_db:
         condition: service_healthy
     container_name: "app"
-    command: ["executable", "arg"]
     env_file:
       - .env
     restart: always
@@ -56,6 +55,7 @@ services:
       - "${SERVER_PORT}:${SERVER_PORT}"
     volumes:
       - .:/app
+    command: go run main.go # dev server uses this, not for production server
 volumes:
   pagination_app_db-data:
 

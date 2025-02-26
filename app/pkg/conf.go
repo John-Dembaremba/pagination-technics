@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,14 +11,15 @@ import (
 )
 
 type Env struct {
-	ProjectVersion   string `mapstructure:"PROJECT_VERSION"`
-	ServerPort       string `mapstructure:"SERVER_PORT"`
-	POSTGRES_VERSION string `mapstructure:"POSTGRES_VERSION"`
-	POSTGRES_DB      string `mapstructure:"POSTGRES_DB"`
-	POSTGRES_USER    string `mapstructure:"POSTGRES_USER"`
-	POSTGRES_PSW     string `mapstructure:"POSTGRES_PSW"`
-	POSTGRES_PORT    string `mapstructure:"POSTGRES_PORT"`
-	POSTGRES_HOST    string `mapstructure:"POSTGRES_HOST"`
+	ProjectVersion          string `mapstructure:"PROJECT_VERSION"`
+	ServerPort              string `mapstructure:"SERVER_PORT"`
+	POSTGRES_CONTAINER_NAME string `mapstructure:"POSTGRES_CONTAINER_NAME"`
+	POSTGRES_VERSION        string `mapstructure:"POSTGRES_VERSION"`
+	POSTGRES_DB             string `mapstructure:"POSTGRES_DB"`
+	POSTGRES_USER           string `mapstructure:"POSTGRES_USER"`
+	POSTGRES_PSW            string `mapstructure:"POSTGRES_PSW"`
+	POSTGRES_PORT           string `mapstructure:"POSTGRES_PORT"`
+	POSTGRES_HOST           string `mapstructure:"POSTGRES_HOST"`
 }
 
 func NewEnv() Env {
@@ -66,4 +68,25 @@ func findEnvFilePath() (string, error) {
 		dir = parent
 	}
 	return "", fmt.Errorf(".env file not found")
+}
+
+func ReadFile(path string) (string, error) {
+	// Get the absolute path of the schema file
+	absPath, err := filepath.Abs(filepath.Join("pkg", path))
+	if err != nil {
+		return "", err
+	}
+
+	file, err := os.Open(absPath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	content, err := io.ReadAll(file)
+	if err != nil {
+		return "", err
+	}
+
+	return string(content), nil
 }

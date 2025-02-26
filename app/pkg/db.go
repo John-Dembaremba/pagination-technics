@@ -17,8 +17,8 @@ func DataDogDbMock() (*sql.DB, sqlmock.Sqlmock, error) {
 	return db, mock, nil
 }
 
-func NewPgDb(dbName, dbUser, dbPsw, dbPort string) (*sql.DB, error) {
-	connStr := fmt.Sprintf("postgres://%v:%v@pgdb:%v/%v?sslmode=disable", dbUser, dbPsw, dbPort, dbName)
+func NewPgDb(cntName, dbName, dbUser, dbPsw, dbPort string) (*sql.DB, error) {
+	connStr := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", dbUser, dbPsw, cntName, dbPort, dbName)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
@@ -31,4 +31,10 @@ func NewPgDb(dbName, dbUser, dbPsw, dbPort string) (*sql.DB, error) {
 	log.Println("Database connection established")
 
 	return db, nil
+}
+
+func RunMigration(db *sql.DB, query string) error {
+	_, err := db.Exec(query)
+
+	return err
 }

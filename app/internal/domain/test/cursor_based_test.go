@@ -59,7 +59,7 @@ func TestCursorBasedRead(t *testing.T) {
 				},
 			},
 			{
-				name:      "success - next cursor (20)",
+				name:      "success - next cursor (10)",
 				cursor:    20,
 				limit:     10,
 				isSuccess: true,
@@ -69,7 +69,7 @@ func TestCursorBasedRead(t *testing.T) {
 				},
 			},
 			{
-				name:      "success - next cursor (100)",
+				name:      "success - next cursor (90)",
 				cursor:    100,
 				limit:     10,
 				isSuccess: true,

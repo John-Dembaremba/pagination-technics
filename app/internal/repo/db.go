@@ -85,10 +85,17 @@ func (r RepositoryHandler) TotalUsers() (int, error) {
 }
 
 func (r RepositoryHandler) CursorBasedRead(cursor, limit int) (model.UsersData, error) {
-	query := "SELECT id, name, surname FROM users WHERE id < $1 ORDER BY id DESC LIMIT $2;"
+	if cursor <= 1 {
+		return initCursor(limit, r.Db)
+	}
+	return actualCursor(cursor, limit, r.Db)
+}
 
+// handles only cursor less or equal 1
+func initCursor(limit int, db *sql.DB) (model.UsersData, error) {
 	var usersData model.UsersData
-	rows, err := r.Db.Query(query, cursor, limit)
+	query := "SELECT id, name, surname FROM users ORDER BY id DESC LIMIT $1;"
+	rows, err := db.Query(query, limit)
 	if err != nil {
 		return usersData, fmt.Errorf("CursorBasedRead query exec failed with error: %v", err)
 	}
@@ -97,7 +104,30 @@ func (r RepositoryHandler) CursorBasedRead(cursor, limit int) (model.UsersData, 
 	for rows.Next() {
 		var userData model.UserData
 		if err := rows.Scan(&userData.ID, &userData.UserGenData.Name, &userData.UserGenData.Surname); err != nil {
-			return usersData, fmt.Errorf("CursorBasedRead query exec failed with error: %v", err)
+			return usersData, fmt.Errorf("CursorBasedRead query scan failed with error: %v", err)
+		}
+
+		usersData = append(usersData, userData)
+
+	}
+	return usersData, nil
+}
+
+// handles only cursor greater than 1
+func actualCursor(cursor, limit int, db *sql.DB) (model.UsersData, error) {
+	var usersData model.UsersData
+
+	query := "SELECT id, name, surname FROM users WHERE id < $1 ORDER BY id DESC LIMIT $2;"
+	rows, err := db.Query(query, cursor, limit)
+	if err != nil {
+		return usersData, fmt.Errorf("CursorBasedRead query exec failed with error: %v", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var userData model.UserData
+		if err := rows.Scan(&userData.ID, &userData.UserGenData.Name, &userData.UserGenData.Surname); err != nil {
+			return usersData, fmt.Errorf("CursorBasedRead query scan failed with error: %v", err)
 		}
 
 		usersData = append(usersData, userData)

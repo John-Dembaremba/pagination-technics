@@ -1,5 +1,5 @@
-CREATE TABLE "users" (
-    "id" SERIAL PRIMARY KEY,
-    "name" varchar(75),
-    "surname" varchar(200)
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(75),
+    surname VARCHAR(200)
 );
