@@ -11,8 +11,9 @@ INTERNAL_CODE=./internal
 
 # Directories
 SRC_DIR=./main.go
-DOMAIN_DIR=$(INTERNAL_CODE)/domain...
+DOMAIN_DIR=$(INTERNAL_CODE)/domain
 API_DIR=$(INTERNAL_CODE)/api...
+REPO_DIR=$(INTERNAL_CODE)/repo
 PKG_DIR=./pkg/...
 
 # Default target executed when no arguments are given to make
@@ -29,9 +30,11 @@ run:
 
 # Test all ./internal packages
 test-domain:
-	$(GOTEST) -v $(DOMAIN_DIR)
+	$(GOTEST) -v $(DOMAIN_DIR)/test
 test-api:
 	$(GOTEST) -v $(API_DIR)
+test-repo:
+	$(GOTEST) -v $(REPO_DIR)/test
 
 # Clean build files
 clean:
