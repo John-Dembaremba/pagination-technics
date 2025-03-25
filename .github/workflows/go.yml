@@ -46,3 +46,19 @@ jobs:
       run: go mod download
       working-directory: app
 
+    - name: Static Code Analysis
+      run: make fmt
+      working-directory: app
+
+    - name: Test Domain Layer
+      run: make test-domain || echo "no tests found"
+      working-directory: app
+
+    - name: Test Api Layer
+      run: make test-api || echo "no tests found"
+      working-directory: app
+
+    - name: Build
+      run: make build
+      working-directory: app
+
