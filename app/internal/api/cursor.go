@@ -5,18 +5,14 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/John-Dembaremba/pagination-technics/internal/model"
+	"github.com/John-Dembaremba/pagination-technics/internal/domain/pagination"
 )
 
-type cursorBasedHandlerInterface interface {
-	Retrieve(cursor, limit int) (model.UsersCursorBasedMetaData, error)
-}
-
 type CursorBasedHttpController struct {
-	Handler cursorBasedHandlerInterface
+	Handler pagination.CursorBasedHandler
 }
 
-func NewCursorBasedHttpController(repo cursorBasedHandlerInterface) CursorBasedHttpController {
+func NewCursorBasedHttpController(repo pagination.CursorBasedHandler) CursorBasedHttpController {
 	return CursorBasedHttpController{
 		Handler: repo,
 	}
