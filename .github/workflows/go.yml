@@ -32,10 +32,15 @@ jobs:
             ${{ runner.os }}-go-
 
     - name: Create .env file
+      env:
+        PROJECT_VERSION: "1.0.0"
+        SERVER_PORT: "8080"
+        POSTGRES_PSW: ${{ secrets.POSTGRES_PSW }}
       run: |
-        echo "PROJECT_VERSION=${{ env.PROJECT_VERSION }}" >> app/.env
-        echo "SERVER_PORT=${{ env.SERVER_PORT }}" >> app/.env
-        echo "POSTGRES_PSW=${{ env.POSTGRES_PSW }}" >> app/.env
+        mkdir -p app
+        echo "PROJECT_VERSION=$PROJECT_VERSION" >> app/.env
+        echo "SERVER_PORT=$SERVER_PORT" >> app/.env
+        echo "POSTGRES_PSW=$POSTGRES_PSW" >> app/.env
         echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> app/.env
         echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> app/.env
         echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> app/.env
