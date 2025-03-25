@@ -50,6 +50,10 @@ jobs:
       run: make fmt
       working-directory: app
 
+    - name: Test Repo Layer
+      run: make test-repo || echo "no tests found"
+      working-directory: app 
+
     - name: Test Domain Layer
       run: make test-domain || echo "no tests found"
       working-directory: app
