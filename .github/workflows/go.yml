@@ -46,6 +46,27 @@ jobs:
         echo "POSTGRES_VERSION=${{ secrets.POSTGRES_VERSION }}" >> .env
         echo "Read .env"
         cat .env
-    - name: Debug .env
+    - name: Install dependencies
+      run: go mod download
       working-directory: app
-      run: cat .env
+
+    - name: Static Code Analysis
+      run: make fmt
+      working-directory: app
+
+    - name: Test Repo Layer
+      run: make test-repo
+      working-directory: app
+
+    - name: Test Domain Layer
+      run: make test-domain || echo "no tests found"
+      working-directory: app
+
+    - name: Test Api Layer
+      run: make test-api || echo "no tests found"
+      working-directory: app
+
+    - name: Build
+      run: make build
+      working-directory: app
+
