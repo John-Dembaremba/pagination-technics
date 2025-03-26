@@ -35,6 +35,7 @@ jobs:
       run: |
         echo "PROJECT_VERSION=${{ env.PROJECT_VERSION }}"
         echo "SERVER_PORT=${{ env.SERVER_PORT }}"
+        echo "POSTGRES_CONTAINER_NAME=${{ secrets.POSTGRES_CONTAINER_NAME }}"
         echo "POSTGRES_PSW=${{ secrets.POSTGRES_PSW }}"
         echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}"
         echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}"
