@@ -40,7 +40,7 @@ jobs:
         mkdir -p app
         echo "PROJECT_VERSION=$PROJECT_VERSION" >> app/.env
         echo "SERVER_PORT=$SERVER_PORT" >> app/.env
-        echo "POSTGRES_PSW=$POSTGRES_PSW" >> app/.env
+        echo "POSTGRES_PSW=${{ var.POSTGRES_PSW }}" >> app/.env
         echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> app/.env
         echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> app/.env
         echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> app/.env
