@@ -31,17 +31,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-    - name: Create .env file
+    - name: Set env file
+      working-directory: app
       run: |
-        echo "PROJECT_VERSION=${{ env.PROJECT_VERSION }}" >> app/.env
-        echo "SERVER_PORT=${{ env.SERVER_PORT }}" >> app/.env
-        echo "POSTGRES_PSW=${{ env.POSTGRES_PSW }}" >> app/.env
-        echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> app/.env
-        echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> app/.env
-        echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> app/.env
-        echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> app/.env
-        echo "POSTGRES_VERSION=${{ secrets.POSTGRES_VERSION }}" >> app/.env
-
+        mkdir -p .
+        echo "PROJECT_VERSION=${{ vars.PROJECT_VERSION }}"  > .env
+        echo "SERVER_PORT=${{ vars.SERVER_PORT }}"  >> .env
+        echo "POSTGRES_CONTAINER_NAME=${{ secrets.POSTGRES_CONTAINER_NAME }}"  >> .env
+        echo "POSTGRES_PSW=${{ secrets.POSTGRES_PSW }}"  >> .env
+        echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}"  >> .env
+        echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}"  >> .env
+        echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}"  >> .env
+        echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" .env
+        echo "POSTGRES_VERSION=${{ secrets.POSTGRES_VERSION }}" >> .env
+        echo "Read .env"
+        cat .env
     - name: Install dependencies
       run: go mod download
       working-directory: app
@@ -51,15 +55,15 @@ jobs:
       working-directory: app
 
     - name: Test Repo Layer
-      run: make test-repo || echo "no tests found"
-      working-directory: app 
+      run: make test-repo
+      working-directory: app
 
     - name: Test Domain Layer
-      run: make test-domain || echo "no tests found"
+      run: make test-domain
       working-directory: app
 
     - name: Test Api Layer
-      run: make test-api || echo "no tests found"
+      run: make test-api
       working-directory: app
 
     - name: Build
