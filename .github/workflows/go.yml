@@ -33,8 +33,8 @@ jobs:
 
     - name: Set env file
       run: |
-        echo "PROJECT_VERSION=${{ env.PROJECT_VERSION }}"
-        echo "SERVER_PORT=${{ env.SERVER_PORT }}"
+        echo "PROJECT_VERSION=${{ vars.PROJECT_VERSION }}"
+        echo "SERVER_PORT=${{ vars.SERVER_PORT }}"
         echo "POSTGRES_CONTAINER_NAME=${{ secrets.POSTGRES_CONTAINER_NAME }}"
         echo "POSTGRES_PSW=${{ secrets.POSTGRES_PSW }}"
         echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}"
