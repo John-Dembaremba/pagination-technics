@@ -44,7 +44,8 @@ jobs:
         echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} >> .env"
         echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} >> .env"
         echo "POSTGRES_VERSION=${{ secrets.POSTGRES_VERSION }} >> .env"
-
+        echo "Read .env"
+        cat .env
     - name: Debug .env
       working-directory: app
       run: cat .env
