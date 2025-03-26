@@ -35,15 +35,15 @@ jobs:
       working-directory: app
       run: |
         mkdir -p .
-        echo "PROJECT_VERSION=${{ vars.PROJECT_VERSION }} > .env"
-        echo "SERVER_PORT=${{ vars.SERVER_PORT }} >> .env"
-        echo "POSTGRES_CONTAINER_NAME=${{ secrets.POSTGRES_CONTAINER_NAME }} >> .env"
-        echo "POSTGRES_PSW=${{ secrets.POSTGRES_PSW }} >> .env"
-        echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env"
-        echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env"
-        echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} >> .env"
-        echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} >> .env"
-        echo "POSTGRES_VERSION=${{ secrets.POSTGRES_VERSION }} >> .env"
+        echo "PROJECT_VERSION=${{ vars.PROJECT_VERSION }}"  > .env
+        echo "SERVER_PORT=${{ vars.SERVER_PORT }}"  >> .env
+        echo "POSTGRES_CONTAINER_NAME=${{ secrets.POSTGRES_CONTAINER_NAME }}"  >> .env
+        echo "POSTGRES_PSW=${{ secrets.POSTGRES_PSW }}"  >> .env
+        echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}"  >> .env
+        echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}"  >> .env
+        echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}"  >> .env
+        echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" .env
+        echo "POSTGRES_VERSION=${{ secrets.POSTGRES_VERSION }}" >> .env
         echo "Read .env"
         cat .env
     - name: Debug .env
