@@ -59,11 +59,11 @@ jobs:
       working-directory: app
 
     - name: Test Domain Layer
-      run: make test-domain || echo "no tests found"
+      run: make test-domain
       working-directory: app
 
     - name: Test Api Layer
-      run: make test-api || echo "no tests found"
+      run: make test-api
       working-directory: app
 
     - name: Build
