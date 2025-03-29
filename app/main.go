@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+
 	log.Println("Setting Env Variables ...")
 	env := pkg.NewEnv()
 
@@ -50,6 +51,12 @@ func main() {
 	defer log.Println("--------------------------")
 
 	mux := http.NewServeMux()
+
+	log.Println("Init Prometheus Metrics http handler ....")
+	promHttpH := pkg.NewPromMetricsHttpHandler()
+	mux.Handle("/metrics", promHttpH)
+	log.Println("Prometheus Metrics http handler set")
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello Paginators are ready")
 	})
