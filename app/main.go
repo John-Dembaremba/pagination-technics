@@ -63,7 +63,10 @@ func main() {
 	log.Println("Initialize Tracer .....")
 	tracerHander := pkg.TracerConfigHandler{}
 	tp, err := tracerHander.InitTracer(env.OTLP_HTTP_PORT, env.JAEGER_HOST, "pagination-app")
-	log.Fatalf("Tracer init failed with error: %v", err)
+	if err != nil {
+		log.Fatalf("Tracer init failed with error: %v", err)
+
+	}
 
 	defer func() {
 		if err := tp.Shutdown(context.Background()); err != nil {
