@@ -31,7 +31,7 @@ func NewLimitOffSetHandler(db *sql.DB) LimitOffSetHandler {
 func (h LimitOffSetHandler) RetrieveUsers(ctx context.Context, page, limit int) (model.UsersPaginationMetaData, error) {
 	// tracer span instance
 	tracerHander := pkg.TracerConfigHandler{}
-	ctx, span := tracerHander.TracerSpan(ctx, "limit-offset-domain", "pagination: retrieve")
+	ctx, span := tracerHander.TracerSpan(ctx, "limit-offset-domain", "domain: retrieve")
 	defer span.End()
 
 	if page < 1 {

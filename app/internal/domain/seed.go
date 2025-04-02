@@ -23,7 +23,7 @@ type SeedHandler struct {
 func (s SeedHandler) Seed(ctx context.Context, itemsNum int) error {
 	// tracer span instance
 	tracerHander := pkg.TracerConfigHandler{}
-	ctx, span := tracerHander.TracerSpan(ctx, "seeding-domain", "pagination: Seed")
+	ctx, span := tracerHander.TracerSpan(ctx, "seeding-domain", "domain: Seed")
 	defer span.End()
 
 	usersData := s.Generator.Generate(int64(itemsNum))

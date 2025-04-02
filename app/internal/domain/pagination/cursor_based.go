@@ -32,7 +32,7 @@ func NewCursorBasedHandler(db *sql.DB) CursorBasedHandler {
 func (h CursorBasedHandler) Retrieve(ctx context.Context, cursor, limit int) (model.UsersCursorBasedMetaData, error) {
 	// tracer span instance
 	tracerHander := pkg.TracerConfigHandler{}
-	ctx, span := tracerHander.TracerSpan(ctx, "cursor-domain", "pagination: retrieve")
+	ctx, span := tracerHander.TracerSpan(ctx, "cursor-domain", "domain: retrieve")
 	defer span.End()
 
 	var pgMetaData model.UsersCursorBasedMetaData

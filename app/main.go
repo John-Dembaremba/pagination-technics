@@ -34,12 +34,19 @@ func main() {
 	}
 	log.Println("Migration completed successfully.")
 
-	repo := repo.RepositoryHandler{Db: db}
+	// Tracing
+	log.Println("Initialize Tracer .....")
+	tracerHander := pkg.TracerConfigHandler{}
+	tp, err := tracerHander.InitTracer(env.OTLP_HTTP_PORT, env.JAEGER_HOST, "pagination-app")
+	if err != nil {
+		log.Fatalf("Tracer init failed with error: %v", err)
 
+	}
+
+	repo := repo.RepositoryHandler{Db: db}
 	numUsers := 1000
 
 	log.Printf("Seeding %v of users", numUsers)
-
 	seedH := domain.SeedHandler{
 		Generator: domain.DataGenHandler{},
 		Repo:      repo,
@@ -58,15 +65,6 @@ func main() {
 	promHttpH := pkg.NewPromMetricsHttpHandler()
 	mux.Handle("/metrics", promHttpH)
 	log.Println("Prometheus Metrics http handler set")
-
-	// Tracing
-	log.Println("Initialize Tracer .....")
-	tracerHander := pkg.TracerConfigHandler{}
-	tp, err := tracerHander.InitTracer(env.OTLP_HTTP_PORT, env.JAEGER_HOST, "pagination-app")
-	if err != nil {
-		log.Fatalf("Tracer init failed with error: %v", err)
-
-	}
 
 	defer func() {
 		if err := tp.Shutdown(context.Background()); err != nil {

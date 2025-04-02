@@ -20,7 +20,7 @@ type RepositoryHandler struct {
 func (r RepositoryHandler) Create(ctx context.Context, users []model.UserGenData) error {
 	// tracer span instance
 	tracerHander := pkg.TracerConfigHandler{}
-	ctx, span := tracerHander.TracerSpan(ctx, "create-users-repo", "pagination: Create")
+	ctx, span := tracerHander.TracerSpan(ctx, "create-users-repo", "repo: Create")
 	defer span.End()
 
 	// Open transaction
@@ -75,7 +75,7 @@ func (r RepositoryHandler) Create(ctx context.Context, users []model.UserGenData
 func (r RepositoryHandler) LimitOffsetRead(ctx context.Context, offset, limit int) (model.UsersData, error) {
 	// tracer span instance
 	tracerHander := pkg.TracerConfigHandler{}
-	ctx, span := tracerHander.TracerSpan(ctx, "limit-offset-repo", "pagination: LimitOffsetRead")
+	ctx, span := tracerHander.TracerSpan(ctx, "limit-offset-repo", "repo: LimitOffsetRead")
 	defer span.End()
 
 	query := `SELECT id, name, surname FROM users ORDER BY id LIMIT $1 OFFSET $2;`
@@ -106,7 +106,7 @@ func (r RepositoryHandler) LimitOffsetRead(ctx context.Context, offset, limit in
 func (r RepositoryHandler) TotalUsers(ctx context.Context) (int, error) {
 	// tracer span instance
 	tracerHander := pkg.TracerConfigHandler{}
-	ctx, span := tracerHander.TracerSpan(ctx, "total-users-repo", "pagination: TotalUsers")
+	ctx, span := tracerHander.TracerSpan(ctx, "total-users-repo", "repo: TotalUsers")
 	defer span.End()
 
 	var count int
@@ -129,7 +129,7 @@ func (r RepositoryHandler) CursorBasedRead(ctx context.Context, cursor, limit in
 func initCursor(ctx context.Context, limit int, db *sql.DB) (model.UsersData, error) {
 	// tracer span instance
 	tracerHander := pkg.TracerConfigHandler{}
-	ctx, span := tracerHander.TracerSpan(ctx, "cursor-repo", "pagination: initCursor")
+	ctx, span := tracerHander.TracerSpan(ctx, "cursor-repo", "repo: initCursor")
 	defer span.End()
 
 	var usersData model.UsersData
@@ -160,7 +160,7 @@ func initCursor(ctx context.Context, limit int, db *sql.DB) (model.UsersData, er
 func actualCursor(ctx context.Context, cursor, limit int, db *sql.DB) (model.UsersData, error) {
 	// tracer span instance
 	tracerHander := pkg.TracerConfigHandler{}
-	ctx, span := tracerHander.TracerSpan(ctx, "cursor-repo", "pagination: actualCursor")
+	ctx, span := tracerHander.TracerSpan(ctx, "cursor-repo", "repo: actualCursor")
 	defer span.End()
 
 	var usersData model.UsersData
