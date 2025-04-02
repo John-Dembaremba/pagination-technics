@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/John-Dembaremba/pagination-technics/internal/domain/pagination"
+	"github.com/John-Dembaremba/pagination-technics/pkg"
 )
 
 type CursorBasedHttpController struct {
@@ -19,6 +20,12 @@ func NewCursorBasedHttpController(repo pagination.CursorBasedHandler) CursorBase
 }
 
 func (h CursorBasedHttpController) GetUsers(w http.ResponseWriter, r *http.Request) {
+	// tracer span instance
+	tracerHander := pkg.TracerConfigHandler{}
+	ctx, span := tracerHander.TracerSpan(r.Context(), "cursor-httpController", "controller: get-users")
+	defer span.End()
+
+	// query params handling
 	query_params := r.URL.Query()
 	cursorStr := query_params.Get("cursor")
 	limitStr := query_params.Get("limit")
@@ -36,9 +43,11 @@ func (h CursorBasedHttpController) GetUsers(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	result, err := h.Handler.Retrieve(cursorInt, limitInt)
+	// domain layer
+	result, err := h.Handler.Retrieve(ctx, cursorInt, limitInt)
 	if err != nil {
 		JSONResponse(w, http.StatusInternalServerError, d, "something went wrong, please try agian", "")
+		span.RecordError(err) // Record error in span
 		log.Printf("GetUsers Controller failed with error: %v", err)
 		return
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"github.com/John-Dembaremba/pagination-technics/internal/domain/pagination"
 	"github.com/John-Dembaremba/pagination-technics/internal/repo"
 	"github.com/John-Dembaremba/pagination-technics/pkg"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func main() {
@@ -57,17 +59,41 @@ func main() {
 	mux.Handle("/metrics", promHttpH)
 	log.Println("Prometheus Metrics http handler set")
 
+	// Tracing
+	log.Println("Initialize Tracer .....")
+	tracerHander := pkg.TracerConfigHandler{}
+	tp, err := tracerHander.InitTracer(env.OTLP_HTTP_PORT, env.JAEGER_HOST, "pagination-app")
+	log.Fatalf("Tracer init failed with error: %v", err)
+
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Fatalf("Error shutting down tracer handler: %v", err)
+		}
+		log.Println("Gracefully shutdown tracer handler")
+	}()
+
+	log.Println("Tracer initialized successfully and running ..")
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello Paginators are ready")
 	})
 
 	cursorBsdHandler := pagination.NewCursorBasedHandler(db)
 	cursorBsdHttpControler := api.NewCursorBasedHttpController(cursorBsdHandler)
-	mux.HandleFunc("GET /users/cursor-based", cursorBsdHttpControler.GetUsers)
+	mux.Handle("GET /users/cursor-based",
+		otelhttp.NewHandler(
+			http.HandlerFunc(cursorBsdHttpControler.GetUsers),
+			"cursor-based-pagination",
+		))
 
 	limitOffsetHandler := pagination.NewLimitOffSetHandler(db)
 	limitOffsetHttpController := api.NewLimitOffsetHttpControler(limitOffsetHandler)
-	mux.HandleFunc("GET /users/limit-offset", limitOffsetHttpController.GetUsers)
+
+	mux.Handle("GET /users/limit-offset",
+		otelhttp.NewHandler(
+			http.HandlerFunc(limitOffsetHttpController.GetUsers),
+			"cursor-based-pagination",
+		))
 
 	http.ListenAndServe(fmt.Sprintf(":%v", env.ServerPort), mux)
 }
