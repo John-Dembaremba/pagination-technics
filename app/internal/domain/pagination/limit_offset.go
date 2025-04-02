@@ -1,16 +1,18 @@
 package pagination
 
 import (
+	"context"
 	"database/sql"
 	"math"
 
 	"github.com/John-Dembaremba/pagination-technics/internal/model"
 	"github.com/John-Dembaremba/pagination-technics/internal/repo"
+	"github.com/John-Dembaremba/pagination-technics/pkg"
 )
 
 type repoInterface interface {
-	LimitOffsetRead(offset, limit int) (model.UsersData, error)
-	TotalUsers() (int, error)
+	LimitOffsetRead(ctx context.Context, offset, limit int) (model.UsersData, error)
+	TotalUsers(ctx context.Context) (int, error)
 }
 
 type LimitOffSetHandler struct {
@@ -26,7 +28,12 @@ func NewLimitOffSetHandler(db *sql.DB) LimitOffSetHandler {
 }
 
 // RetrieveUsers fetches paginated user data based on the given page and limit values.
-func (h LimitOffSetHandler) RetrieveUsers(page, limit int) (model.UsersPaginationMetaData, error) {
+func (h LimitOffSetHandler) RetrieveUsers(ctx context.Context, page, limit int) (model.UsersPaginationMetaData, error) {
+	// tracer span instance
+	tracerHander := pkg.TracerConfigHandler{}
+	ctx, span := tracerHander.TracerSpan(ctx, "limit-offset-domain", "domain: retrieve")
+	defer span.End()
+
 	if page < 1 {
 		page = 1
 	}
@@ -35,12 +42,13 @@ func (h LimitOffSetHandler) RetrieveUsers(page, limit int) (model.UsersPaginatio
 	var pg model.Pagination
 
 	offset := (page - 1) * limit
-	usersData, err := h.Repo.LimitOffsetRead(offset, limit)
+	usersData, err := h.Repo.LimitOffsetRead(ctx, offset, limit)
 	if err != nil {
+		span.RecordError(err)
 		return data, err
 	}
 
-	totalUsers, err := h.Repo.TotalUsers()
+	totalUsers, err := h.Repo.TotalUsers(ctx)
 	if err != nil {
 		return data, err
 	}

@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -16,6 +17,7 @@ func TestCursorBasedRead(t *testing.T) {
 		t.Errorf("db mock failed with error: %v", err)
 	}
 	defer db.Close()
+	ctx := context.Background()
 	repoH := repo.RepositoryHandler{Db: db}
 	usersData := pkg.FakeUsersData(3)
 	rows := mock.NewRows([]string{"id", "name", "surname"})
@@ -45,7 +47,7 @@ func TestCursorBasedRead(t *testing.T) {
 			cursor, limit := 1, 10
 			query := "SELECT id, name, surname FROM users ORDER BY id DESC LIMIT $1;"
 			mock.ExpectQuery(query).WithArgs(limit).WillReturnRows(rows)
-			got, err := repoH.CursorBasedRead(cursor, limit)
+			got, err := repoH.CursorBasedRead(ctx, cursor, limit)
 			if err != nil {
 				t.Errorf("expected no error but got %v", err)
 			}
@@ -56,7 +58,7 @@ func TestCursorBasedRead(t *testing.T) {
 			cursor, limit := 5, 3
 			query := "SELECT id, name, surname FROM users WHERE id < $1 ORDER BY id DESC LIMIT $2;"
 			mock.ExpectQuery(query).WithArgs(cursor, limit).WillReturnRows(rows)
-			_, err := repoH.CursorBasedRead(cursor, limit)
+			_, err := repoH.CursorBasedRead(ctx, cursor, limit)
 			if err != nil {
 				t.Errorf("expected no error but got %v", err)
 			}

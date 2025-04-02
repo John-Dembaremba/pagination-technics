@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -18,7 +19,7 @@ func TestLimitOffsetRead(t *testing.T) {
 	offset, limit := 0, 10
 	usersData := pkg.FakeUsersData(3)
 	rows := mock.NewRows([]string{"id", "name", "surname"})
-
+	ctx := context.Background()
 	for _, user := range usersData {
 		rows.AddRow(
 			user.ID,
@@ -30,7 +31,7 @@ func TestLimitOffsetRead(t *testing.T) {
 
 	t.Run("success query", func(t *testing.T) {
 		mock.ExpectQuery(query).WithArgs(limit, offset).WillReturnRows(rows)
-		got, err := repoH.LimitOffsetRead(offset, limit)
+		got, err := repoH.LimitOffsetRead(ctx, offset, limit)
 
 		if err := mock.ExpectationsWereMet(); err != nil {
 			t.Errorf("there were unfulfilled expectations: %s", err)

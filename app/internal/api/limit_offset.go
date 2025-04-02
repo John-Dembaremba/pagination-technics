@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/John-Dembaremba/pagination-technics/internal/domain/pagination"
+	"github.com/John-Dembaremba/pagination-technics/pkg"
 )
 
 type LimitOffsetHttpControler struct {
@@ -18,6 +19,11 @@ func NewLimitOffsetHttpControler(repo pagination.LimitOffSetHandler) LimitOffset
 }
 
 func (h LimitOffsetHttpControler) GetUsers(w http.ResponseWriter, r *http.Request) {
+	// tracer span instance
+	tracerHander := pkg.TracerConfigHandler{}
+	ctx, span := tracerHander.TracerSpan(r.Context(), "limit-offset-httpController", "controller: get-users")
+	defer span.End()
+
 	url := r.URL.Query()
 
 	pageStr := url.Get("page")
@@ -36,8 +42,9 @@ func (h LimitOffsetHttpControler) GetUsers(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userData, err := h.Handler.RetrieveUsers(pageInt, limitInt)
+	userData, err := h.Handler.RetrieveUsers(ctx, pageInt, limitInt)
 	if err != nil {
+		span.RecordError(err)
 		JSONResponse(w, http.StatusInternalServerError, d, "something went wrong", "")
 		return
 	}

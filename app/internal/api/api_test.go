@@ -37,7 +37,7 @@ func TestGetUsers(t *testing.T) {
 		Generator: domain.DataGenHandler{},
 		Repo:      repo,
 	}
-	if err := seedH.Seed(1000); err != nil {
+	if err := seedH.Seed(ctx, 1000); err != nil {
 		log.Fatalf("Seeding failed with error: %v", err)
 	}
 
