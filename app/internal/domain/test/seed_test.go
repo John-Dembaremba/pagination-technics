@@ -58,7 +58,7 @@ func TestSeedHandler(t *testing.T) {
 	for _, tc := range testCases {
 
 		t.Run(tc.name, func(t *testing.T) {
-			err := handler.Seed(tc.itemsNum)
+			err := handler.Seed(ctx, tc.itemsNum)
 
 			if err != tc.expectedErr {
 				switch tc.expectedErr {

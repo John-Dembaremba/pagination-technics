@@ -17,11 +17,18 @@ type RepositoryHandler struct {
 // Create inserts multiple UserGenData records into the 'users' table
 // using a transaction and a prepared COPY statement for efficient bulk insert.
 // Returns an error if any operation fails.
-func (r RepositoryHandler) Create(users []model.UserGenData) error {
+func (r RepositoryHandler) Create(ctx context.Context, users []model.UserGenData) error {
+	// tracer span instance
+	tracerHander := pkg.TracerConfigHandler{}
+	ctx, span := tracerHander.TracerSpan(ctx, "create-users-repo", "pagination: Create")
+	defer span.End()
+
 	// Open transaction
 	tx, err := r.Db.Begin()
 	if err != nil {
-		return fmt.Errorf("failed to open transaction: %v", err)
+		errTrans := fmt.Errorf("failed to open transaction: %v", err)
+		span.RecordError(errTrans)
+		return errTrans
 	}
 	// Ensure rollback on failure
 	defer func() {
@@ -33,44 +40,62 @@ func (r RepositoryHandler) Create(users []model.UserGenData) error {
 	// Prepare COPY statement
 	stmt, err := tx.Prepare(pq.CopyIn("users", "name", "surname"))
 	if err != nil {
-		return fmt.Errorf("failed to prepare COPY statement: %v", err)
+		errPrepSt := fmt.Errorf("failed to prepare COPY statement: %v", err)
+		span.RecordError(errPrepSt)
+		return errPrepSt
 	}
 	defer stmt.Close()
 
 	// Bulk insert users
 	for _, user := range users {
 		if _, err = stmt.Exec(user.Name, user.Surname); err != nil {
-			return fmt.Errorf("failed to insert data: %v", err)
+			errInsert := fmt.Errorf("failed to insert data: %v", err)
+			span.RecordError(errInsert)
+			return errInsert
 		}
 	}
 
 	// Flush remaining data
 	if _, err = stmt.Exec(); err != nil {
-		return fmt.Errorf("failed to flush data: %v", err)
+		errFlush := fmt.Errorf("failed to flush data: %v", err)
+		span.RecordError(errFlush)
+		return errFlush
 	}
 
 	// Commit transaction
 	if err = tx.Commit(); err != nil {
-		return fmt.Errorf("failed to commit transaction: %v", err)
+		errCommit := fmt.Errorf("failed to commit transaction: %v", err)
+		span.RecordError(errCommit)
+		return errCommit
 	}
 
 	return nil
 }
 
-func (r RepositoryHandler) LimitOffsetRead(offset, limit int) (model.UsersData, error) {
+func (r RepositoryHandler) LimitOffsetRead(ctx context.Context, offset, limit int) (model.UsersData, error) {
+	// tracer span instance
+	tracerHander := pkg.TracerConfigHandler{}
+	ctx, span := tracerHander.TracerSpan(ctx, "limit-offset-repo", "pagination: LimitOffsetRead")
+	defer span.End()
+
 	query := `SELECT id, name, surname FROM users ORDER BY id LIMIT $1 OFFSET $2;`
 
 	var usersData model.UsersData
 	rows, err := r.Db.Query(query, limit, offset)
+
 	if err != nil {
-		return usersData, fmt.Errorf("LimitOffsetRead query exec failed with error: %v", err)
+		errQueryExec := fmt.Errorf("LimitOffsetReadquery exec failed with error: %v", err)
+		span.RecordError(errQueryExec) // Record error in span
+		return usersData, errQueryExec
 	}
 
 	defer rows.Close()
 	for rows.Next() {
 		var userData model.UserData
 		if err := rows.Scan(&userData.ID, &userData.Name, &userData.Surname); err != nil {
-			return usersData, fmt.Errorf("LimitOffsetRead query scan failed with error: %v", err)
+			errQueryScan := fmt.Errorf("LimitOffsetReadquery scan failed with error: %v", err)
+			span.RecordError(errQueryScan) // Record error in span
+			return usersData, errQueryScan
 		}
 		usersData = append(usersData, userData)
 	}
@@ -78,10 +103,17 @@ func (r RepositoryHandler) LimitOffsetRead(offset, limit int) (model.UsersData, 
 	return usersData, nil
 }
 
-func (r RepositoryHandler) TotalUsers() (int, error) {
+func (r RepositoryHandler) TotalUsers(ctx context.Context) (int, error) {
+	// tracer span instance
+	tracerHander := pkg.TracerConfigHandler{}
+	ctx, span := tracerHander.TracerSpan(ctx, "total-users-repo", "pagination: TotalUsers")
+	defer span.End()
+
 	var count int
 	if err := r.Db.QueryRow("SELECT COUNT(id) FROM users").Scan(&count); err != nil {
-		return count, fmt.Errorf("TotalUsers query exec failed with error: %v", err)
+		errQueryExec := fmt.Errorf("TotalUsers query exec failed with error: %v", err)
+		span.RecordError(errQueryExec)
+		return count, errQueryExec
 	}
 	return count, nil
 }

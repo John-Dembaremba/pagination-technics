@@ -1,7 +1,10 @@
 package domain
 
 import (
+	"context"
+
 	"github.com/John-Dembaremba/pagination-technics/internal/model"
+	"github.com/John-Dembaremba/pagination-technics/pkg"
 )
 
 type dataGenInterface interface {
@@ -9,7 +12,7 @@ type dataGenInterface interface {
 }
 
 type repoInterface interface {
-	Create(users []model.UserGenData) error
+	Create(ctx context.Context, users []model.UserGenData) error
 }
 
 type SeedHandler struct {
@@ -17,8 +20,13 @@ type SeedHandler struct {
 	Repo      repoInterface
 }
 
-func (s SeedHandler) Seed(itemsNum int) error {
+func (s SeedHandler) Seed(ctx context.Context, itemsNum int) error {
+	// tracer span instance
+	tracerHander := pkg.TracerConfigHandler{}
+	ctx, span := tracerHander.TracerSpan(ctx, "seeding-domain", "pagination: Seed")
+	defer span.End()
+
 	usersData := s.Generator.Generate(int64(itemsNum))
-	err := s.Repo.Create(usersData)
+	err := s.Repo.Create(ctx, usersData)
 	return err
 }

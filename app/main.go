@@ -44,7 +44,7 @@ func main() {
 		Generator: domain.DataGenHandler{},
 		Repo:      repo,
 	}
-	if err = seedH.Seed(numUsers); err != nil {
+	if err = seedH.Seed(context.Background(), numUsers); err != nil {
 		log.Fatalf("Seeding failed with error: %v", err)
 	}
 	log.Println("Seeding completed.")
