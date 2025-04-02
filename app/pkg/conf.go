@@ -20,6 +20,9 @@ type Env struct {
 	POSTGRES_PSW            string `mapstructure:"POSTGRES_PSW"`
 	POSTGRES_PORT           string `mapstructure:"POSTGRES_PORT"`
 	POSTGRES_HOST           string `mapstructure:"POSTGRES_HOST"`
+
+	JAEGER_HOST    string `mapstructure:"JAEGER_HOST"`
+	OTLP_HTTP_PORT int    `mapstructure:"OTLP_HTTP_PORT"`
 }
 
 func NewEnv() Env {

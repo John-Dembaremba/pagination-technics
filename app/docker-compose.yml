@@ -140,6 +140,16 @@ services:
     networks:
       - pagination-app
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: ${JAEGER_HOST}
+    env_file: .env
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "${OTLP_HTTP_PORT}:${OTLP_HTTP_PORT}" # OTLP HTTP endpoint
+    networks:
+      - pagination-app
+
 volumes:
   pagination_app_db-data:
   grafana-storage:
