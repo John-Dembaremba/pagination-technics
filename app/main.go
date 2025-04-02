@@ -93,7 +93,7 @@ func main() {
 	mux.Handle("GET /users/limit-offset",
 		otelhttp.NewHandler(
 			http.HandlerFunc(limitOffsetHttpController.GetUsers),
-			"cursor-based-pagination",
+			"limit-offset-pagination",
 		))
 
 	http.ListenAndServe(fmt.Sprintf(":%v", env.ServerPort), mux)
