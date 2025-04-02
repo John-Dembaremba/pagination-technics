@@ -32,7 +32,7 @@ func TestCursorBasedRead(t *testing.T) {
 		Repo:      repoInterface,
 	}
 
-	if err := seedHandler.Seed(100); err != nil {
+	if err := seedHandler.Seed(ctx, 100); err != nil {
 		log.Fatalf("Failed to load test data with error: %v", err)
 	}
 

@@ -33,7 +33,7 @@ func TestLimitOffSetHandler(t *testing.T) {
 		Repo:      repoInterface,
 	}
 
-	if err := seedHandler.Seed(100); err != nil {
+	if err := seedHandler.Seed(ctx, 100); err != nil {
 		log.Fatalf("Failed to load test data with error: %v", err)
 	}
 
@@ -113,7 +113,7 @@ func TestLimitOffSetHandler(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
-				got, err := handler.RetrieveUsers(tc.page, tc.limit)
+				got, err := handler.RetrieveUsers(ctx, tc.page, tc.limit)
 				if err != nil {
 					t.Errorf("expected no error, got %v", err)
 				}
@@ -194,7 +194,7 @@ func TestLimitOffSetHandler(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
-				data, err := handler.RetrieveUsers(tc.page, tc.limit)
+				data, err := handler.RetrieveUsers(ctx, tc.page, tc.limit)
 
 				if err != nil {
 					t.Errorf("expected no error, got %v", err)

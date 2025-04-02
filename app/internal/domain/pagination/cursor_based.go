@@ -11,7 +11,7 @@ import (
 
 type cursoBasedRepoInterface interface {
 	CursorBasedRead(ctx context.Context, cursor, limit int) (model.UsersData, error)
-	TotalUsers() (int, error)
+	TotalUsers(ctx context.Context) (int, error)
 }
 
 type CursorBasedHandler struct {
