@@ -6,3 +6,13 @@ datasources:
     access: proxy
     url: <promethiues_connection> example http://prometheus:0001
     isDefault: true
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    jsonData:
+      version: Flux
+      organization: k6-org
+      defaultBucket: k6
+    secureJsonData:
+      token: your-token

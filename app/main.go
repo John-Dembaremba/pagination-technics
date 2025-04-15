@@ -18,8 +18,7 @@ func main() {
 
 	log.Println("Setting Env Variables ...")
 	env := pkg.NewEnv()
-
-	db, err := pkg.NewPgDb(env.POSTGRES_CONTAINER_NAME, env.POSTGRES_DB, env.POSTGRES_USER, env.POSTGRES_PSW, env.POSTGRES_PORT)
+	db, err := pkg.NewPgDb(env.POSTGRES_HOST, env.POSTGRES_DB, env.POSTGRES_USER, env.POSTGRES_PSW, env.POSTGRES_PORT)
 	if err != nil {
 		log.Fatalf("failed to init database with error: %v", err)
 	}
@@ -75,7 +74,7 @@ func main() {
 
 	log.Println("Tracer initialized successfully and running ..")
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello Paginators are ready")
 	})
 

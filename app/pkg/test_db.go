@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"testing"
 	"time"
 
 	"github.com/docker/go-connections/nat"
@@ -105,5 +106,13 @@ func TearDown(db *sql.DB, ctr *postgres.PostgresContainer) {
 		}
 
 		log.Println("Db connection closed successfully")
+	}
+}
+
+func TestGetMd5Hash(t *testing.T) {
+	got := getMd5("pagy", "myverystrongpassword")
+	expected := "md5ac77bfe847b783150cc181043bd7d2d7"
+	if got != expected {
+		t.Errorf("Expected hash to be %s, got %s", expected, got)
 	}
 }
