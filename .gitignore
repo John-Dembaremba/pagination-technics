@@ -25,5 +25,5 @@ go.work.sum
 .env
 
 # observability
-datasources.yaml
-prometheus.yml
+app/observability/datasources/datasources.yaml
+app/observability/prometheus/prometheus.yml

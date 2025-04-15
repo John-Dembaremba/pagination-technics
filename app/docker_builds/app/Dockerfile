@@ -7,11 +7,12 @@
 
 FROM golang:1.23 AS builder
 
-WORKDIR /app/
+WORKDIR /app
 
-# Cache dependencies
+# Copy go.mod and go.sum for dependency caching
 COPY go.mod go.sum ./
 
+# Download and verify dependencies
 RUN set -Eeux && \
     go mod download && \
     go mod verify
@@ -30,25 +31,25 @@ RUN GOOS=linux GOARCH=amd64 \
 # Stage 2: Final Image (Slim & Optimized)
 ###############################################################################
 
-# Base image with libc6 support
 FROM alpine:latest AS final
 
-# Install libc6 compatibility layer
-RUN apk add --no-cache libc6-compat
+# Install libc6 compatibility layer and curl
+RUN apk add --no-cache libc6-compat curl
 
 WORKDIR /app
 
 # Copy the binary from stage 1
 COPY --from=builder /app/bin/pagination-app /usr/local/bin/pagination-app
 
-# Copy the .env file
+# Copy the .env and schema file
 COPY .env /app/.env
+COPY pkg/schema.sql /app/pkg/schema.sql
 
 # Set executable permissions
 RUN chmod +x /usr/local/bin/pagination-app
 
-# Expose server port (placeholder)
+# Expose server port (placeholder, set via .env)
 EXPOSE ${SERVER_PORT}
 
-# Run the application with port argument
+# Run the application
 ENTRYPOINT ["/usr/local/bin/pagination-app"]

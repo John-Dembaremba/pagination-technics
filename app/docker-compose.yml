@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   pagination_app_db:
     image: postgres:${POSTGRES_VERSION}
@@ -22,7 +20,7 @@ services:
         ]
       interval: 10s
       timeout: 5s
-      retries: 2
+      retries: 5
     volumes:
       - pagination_app_db-data:/var/lib/postgresql/data
     networks:
@@ -42,7 +40,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker_builds/app/Dockerfile
     depends_on:
       pagination_app_db:
         condition: service_healthy
@@ -54,17 +52,23 @@ services:
       - pagination-app
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
-    volumes:
-      - .:/app
-    command: go run main.go # dev server uses this, not for production server
+    command: /usr/local/bin/pagination-app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${SERVER_PORT}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-remote-write-receiver"
     ports:
-      - "9090:9090"
+      - "${PROMETHEUS_PORT}:${PROMETHEUS_PORT}"
     depends_on:
       node_exporter:
         condition: service_started
@@ -87,7 +91,7 @@ services:
       - grafana-storage:/var/lib/grafana
       - ./observability/dashboards/grafana:/var/lib/grafana/dashboards
       - ./observability/provisioning/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
-      - ./observability/datasources/prometheus/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./observability/datasources/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
     depends_on:
       prometheus:
         condition: service_started
@@ -150,9 +154,57 @@ services:
     networks:
       - pagination-app
 
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    env_file:
+      - .env
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-storage:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_INIT_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_INIT_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
+    networks:
+      - pagination-app
+
+  k6:
+    build:
+      context: .
+      dockerfile: docker_builds/xk6/Dockerfile
+    container_name: k6
+    env_file:
+      - .env
+    volumes:
+      - ./scripts/perf_tests:/home/k6
+    environment:
+      - K6_OUT=xk6-influxdb=http://influxdb:8086
+      - K6_INFLUXDB_ORGANIZATION=${INFLUXDB_INIT_ORG}
+      - K6_INFLUXDB_BUCKET=${INFLUXDB_INIT_BUCKET}
+      - K6_INFLUXDB_INSECURE=true
+        # NOTE: This is an Admin token, it's not suggested to use this configuration in production.
+        # Instead, use a Token with restricted privileges.
+      - K6_INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - K6_INFLUXDB_PUSH_INTERVAL=3s # Increase from default 1s
+    ports:
+      - "6565:6565"
+    depends_on:
+      influxdb:
+        condition: service_started
+      app:
+        condition: service_healthy
+    networks:
+      - pagination-app
+
 volumes:
   pagination_app_db-data:
   grafana-storage:
+  influxdb-storage:
 
 networks:
   pagination-app:
