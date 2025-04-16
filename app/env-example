@@ -34,3 +34,6 @@ PROMETHEUS_PORT=""
 # Tracing Configuration
 JAEGER_HOST=jaeger
 OTLP_HTTP_PORT=4318
+
+ZAP_PORT=""
+ZAP_API_KEY="" // use command 'openssl rand -hex 32' gen 32 bit hex key
