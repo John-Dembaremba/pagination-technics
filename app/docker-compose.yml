@@ -201,6 +201,18 @@ services:
     networks:
       - pagination-app
 
+  zap:
+    image: zaproxy/zap-stable:2.16.1
+    container_name: zap
+    volumes:
+      - ./zap_reports:/zap/wrk
+    environment:
+      - ZAP_PORT=${ZAP_PORT}
+      - ZAP_API_KEY=${ZAP_API_KEY}
+    networks:
+      - pagination-app
+    command: zap.sh -daemon -host 0.0.0.0 -port ${ZAP_PORT} -config api.addrs.addr.name=.* -config api.key=${ZAP_API_KEY}
+
 volumes:
   pagination_app_db-data:
   grafana-storage:
